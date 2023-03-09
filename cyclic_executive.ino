@@ -5,6 +5,17 @@ const byte T3_Pin = 21;
 const byte T4_Pin = 22;
 const byte T5_Pin = 23;
 
+// Maximum values
+const unsigned int maxValue = 3300;
+const unsigned int freq1Min = 333;
+const unsigned int freq2Min = 500;
+const unsigned int freqMax = 1000;
+
+// Values measured
+unsigned int freq1 = -1;
+unsigned int freq2 = -1;
+unsigned int avg = -1;
+
 // Store previous counters of time
 unsigned int currentMicros;
 unsigned int previousMicros = 0;
@@ -84,7 +95,7 @@ void task2() {
   // Execution time
   unsigned int t1 = micros();
 
-  unsigned int freq = freqCount(T2_Pin);
+  freq1 = freqCount(T2_Pin);
 
   // Execution time
   if(freq != -1) {
@@ -97,7 +108,7 @@ void task3() {
   // Execution time
   unsigned int t1 = micros();
 
-  unsigned int freq = freqCount(T3_Pin);
+  freq2 = freqCount(T3_Pin);
 
   // Execution time
   if(freq != -1) {
@@ -109,7 +120,7 @@ void task3() {
 void task4() {
   // Execution time
   unsigned int t1 = micros();
-  unsigned int avg = -1;
+  
   unsigned short i;
 
   values[3] = values[2];
@@ -122,7 +133,7 @@ void task4() {
   }
   avg /= i;
 
-  if(avg >= 3300/2) {
+  if(avg >= maxValue /2) {
     digitalWrite(LED_BUILTIN, HIGH);
   }
   else {
@@ -134,9 +145,22 @@ void task4() {
   Serial.printf("Execution time T4: %d\n", t2-t1);
 }
 
+void task5() {
+  // Execution time
+  unsigned int t1 = micros();
+
+  println("%d,%d", (freq1 - freq1Min) / (freqMax - freq1Min) * 99, (freq1 - freq2Min) / (freqMax - freq2Min) * 99);
+  
+  // Execution time
+  unsigned int t2 = micros();
+  Serial.printf("Execution time T5: %d\n", t2-t1);
+}
+
 void loop() {
   task1();
   task2();
   task3();
+  task4();
+  task5();
   Serial.print("\n");
 }
