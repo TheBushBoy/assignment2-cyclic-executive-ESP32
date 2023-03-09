@@ -2,10 +2,15 @@
 const byte T1_Pin = 15;
 const byte T2_Pin = 20;
 const byte T3_Pin = 21;
+const byte T4_Pin = 22;
+const byte T5_Pin = 23;
 
 // Store previous counters of time
 unsigned int currentMicros;
 unsigned int previousMicros = 0;
+
+// Store 4 values for the task 4
+unsigned int values[4];
 
 void setup() {
   Serial.begin(9600);
@@ -13,6 +18,7 @@ void setup() {
   pinMode(T1_Pin, OUTPUT);
   pinMode(T2_Pin, INPUT);
   pinMode(T3_Pin, INPUT);
+  pinMode(T4_Pin, INPUT);
 }
 
 void task1() {
@@ -98,6 +104,34 @@ void task3() {
     unsigned int t2 = micros();
     Serial.printf("Execution time T3: %d\n", t2-t1);
   }
+}
+
+void task4() {
+  // Execution time
+  unsigned int t1 = micros();
+  unsigned int avg = -1;
+  unsigned short i;
+
+  values[3] = values[2];
+  values[2] = values[1]
+  values[1] = values[0];
+  values[0] = analogRead(T4_Pin);
+
+  for(i = 0; i < 4; i++) {
+    avg += values[i];
+  }
+  avg /= i;
+
+  if(avg >= 3300/2) {
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
+  else {
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+  
+  // Execution time
+  unsigned int t2 = micros();
+  Serial.printf("Execution time T4: %d\n", t2-t1);
 }
 
 void loop() {
