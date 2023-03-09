@@ -98,7 +98,7 @@ void task2() {
   freq1 = freqCount(T2_Pin);
 
   // Execution time
-  if(freq != -1) {
+  if(freq1 != -1) {
     unsigned int t2 = micros();
     Serial.printf("Execution time T2: %d\n", t2-t1);
   }
@@ -111,7 +111,7 @@ void task3() {
   freq2 = freqCount(T3_Pin);
 
   // Execution time
-  if(freq != -1) {
+  if(freq2 != -1) {
     unsigned int t2 = micros();
     Serial.printf("Execution time T3: %d\n", t2-t1);
   }
@@ -124,7 +124,7 @@ void task4() {
   unsigned short i;
 
   values[3] = values[2];
-  values[2] = values[1]
+  values[2] = values[1];
   values[1] = values[0];
   values[0] = analogRead(T4_Pin);
 
@@ -149,7 +149,15 @@ void task5() {
   // Execution time
   unsigned int t1 = micros();
 
-  println("%d,%d", (freq1 - freq1Min) / (freqMax - freq1Min) * 99, (freq1 - freq2Min) / (freqMax - freq2Min) * 99);
+  unsigned short freq1Scaled = (freq1 - freq1Min) / (freqMax - freq1Min) * 99;
+  unsigned short freq2Scaled = (freq2 - freq2Min) / (freqMax - freq2Min) * 99;
+
+  freq1Scaled = (freq1Scaled < 0) ? 0 : freq1Scaled;
+  freq1Scaled = (freq1Scaled > 99) ? 99 : freq1Scaled;
+  freq2Scaled = (freq1Scaled < 0) ? 0 : freq1Scaled;
+  freq2Scaled = (freq1Scaled > 99) ? 99 : freq1Scaled;
+
+  Serial.printf("%d,%d\n", freq1Scaled, freq2Scaled);
   
   // Execution time
   unsigned int t2 = micros();
