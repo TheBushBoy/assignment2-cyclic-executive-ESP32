@@ -1,9 +1,8 @@
 // Pin definition
-const byte T1_Pin = 15;
-const byte T2_Pin = 20;
-const byte T3_Pin = 21;
-const byte T4_Pin = 22;
-const byte T5_Pin = 23;
+const byte T1_Pin = 0;
+const byte T2_Pin = 1;
+const byte T3_Pin = 2;
+const byte T4_Pin = 3;
 
 // Maximum values
 const unsigned int maxValue = 3300;
@@ -12,19 +11,15 @@ const unsigned int freq2Min = 500;
 const unsigned int freqMax = 1000;
 
 // Values measured
-unsigned int freq1 = -1;
-unsigned int freq2 = -1;
-unsigned int avg = -1;
-
-// Store previous counters of time
-unsigned int currentMicros;
-unsigned int previousMicros = 0;
+float freq1 = 0;
+float freq2 = 0;
+unsigned int avg = 0;
 
 // Store 4 values for the task 4
 unsigned int values[4];
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   pinMode(T1_Pin, OUTPUT);
   pinMode(T2_Pin, INPUT);
@@ -34,92 +29,68 @@ void setup() {
 
 void task1() {
   // Execution time
-  unsigned int t1 = micros();
-  
-  // Store previous counters of time
-  currentMicros = micros();
+  /*unsigned int t1 = micros();*/
 
-  // Store previous state of the output
-  bool state = 0;
-  
   // High for 200us
-  if(currentMicros - previousMicros < 200 && !state) {
-    digitalWrite(T1_Pin, HIGH);
-    state = 1;
-  }
+  digitalWrite(T1_Pin, HIGH);
+  delayMicroseconds(200);
+  
   // Low for 50us
-  if(currentMicros - previousMicros < 200 + 50 && state) {
-    digitalWrite(T1_Pin, LOW);
-    state = 0;
-  }
+  digitalWrite(T1_Pin, LOW);
+  delayMicroseconds(50);
+  
   // High for 30us
-  if(currentMicros - previousMicros < 200 + 50 + 30 && !state) {
-    digitalWrite(T1_Pin, HIGH);
-    state = 1;
-  }
-  else {
-    state = 0;
-  }
+  digitalWrite(T1_Pin, HIGH);
+  delayMicroseconds(30);
+
+  digitalWrite(T1_Pin, LOW);
 
   // Execution time
-  unsigned int t2 = micros();
-  Serial.printf("Execution time T1: %d\n", t2-t1);
+  /*unsigned int t2 = micros();
+  Serial.printf("Execution time T1: %d\n", t2-t1);*/
 }
 
-unsigned int freqCount(const byte pinNumber) {
-  unsigned int freq = -1;
-  
+float freqCount(const byte pinNumber) {
   // Measure time of a period
   unsigned int t1, t2;
 
-  // Is this measuring
-  bool measuring = false;
-
-  unsigned int value = analogRead(pinNumber) * 1000;
-  bool state = (value <= 50) ? 0 : 1;
-
-  if(state != (state + 1) % 2 && !measuring) {
-    t1 = millis();
-    measuring = true;
+  // Measuring the time the signal is high and low
+  do {
+    t1 = pulseIn(pinNumber, HIGH, 1e6);
+    t2 = pulseIn(pinNumber, LOW, 1e6);
   }
-  else if(state != (state + 1) % 2 && measuring) {
-    t2 = millis();
-    measuring = false;
-    freq = 1 / (t2 - t1);
-  }
-
-  return freq;
+  // Keep only the consistent values
+  while(t1 == 0 || t2 == 0 || t1 <= 50 || t2 <= 50);
+  
+  return 1e6/(t2 + t1);
 }
 
 void task2() {
   // Execution time
-  unsigned int t1 = micros();
+  /*unsigned int t1 = micros();*/
 
   freq1 = freqCount(T2_Pin);
 
   // Execution time
-  if(freq1 != -1) {
-    unsigned int t2 = micros();
-    Serial.printf("Execution time T2: %d\n", t2-t1);
-  }
+  /*unsigned int t2 = micros();
+  Serial.printf("Execution time T2: %d\n", t2-t1);*/
 }
 
 void task3() {
   // Execution time
-  unsigned int t1 = micros();
+  /*unsigned int t1 = micros();*/
 
   freq2 = freqCount(T3_Pin);
 
   // Execution time
-  if(freq2 != -1) {
-    unsigned int t2 = micros();
-    Serial.printf("Execution time T3: %d\n", t2-t1);
-  }
+  /*unsigned int t2 = micros();
+  Serial.printf("Execution time T3: %d\n", t2-t1);*/
+
 }
 
 void task4() {
   // Execution time
-  unsigned int t1 = micros();
+  /*unsigned int t1 = micros();*/
   
   unsigned short i;
 
@@ -131,7 +102,7 @@ void task4() {
   for(i = 0; i < 4; i++) {
     avg += values[i];
   }
-  avg /= i;
+  avg /= i+1;
 
   if(avg >= maxValue /2) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -141,27 +112,27 @@ void task4() {
   }
   
   // Execution time
-  unsigned int t2 = micros();
-  Serial.printf("Execution time T4: %d\n", t2-t1);
+  /*unsigned int t2 = micros();
+  Serial.printf("Execution time T4: %d\n", t2-t1);*/
 }
 
 void task5() {
   // Execution time
-  unsigned int t1 = micros();
+  /*unsigned int t1 = micros();*/
 
-  unsigned short freq1Scaled = (freq1 - freq1Min) / (freqMax - freq1Min) * 99;
-  unsigned short freq2Scaled = (freq2 - freq2Min) / (freqMax - freq2Min) * 99;
+  int freq1Scaled = (freq1 - freq1Min) / (freqMax - freq1Min) * 99;
+  int freq2Scaled = (freq2 - freq2Min) / (freqMax - freq2Min) * 99;
 
   freq1Scaled = (freq1Scaled < 0) ? 0 : freq1Scaled;
   freq1Scaled = (freq1Scaled > 99) ? 99 : freq1Scaled;
-  freq2Scaled = (freq1Scaled < 0) ? 0 : freq1Scaled;
-  freq2Scaled = (freq1Scaled > 99) ? 99 : freq1Scaled;
+  freq2Scaled = (freq2Scaled < 0) ? 0 : freq2Scaled;
+  freq2Scaled = (freq2Scaled > 99) ? 99 : freq2Scaled;
 
   Serial.printf("%d,%d\n", freq1Scaled, freq2Scaled);
   
   // Execution time
-  unsigned int t2 = micros();
-  Serial.printf("Execution time T5: %d\n", t2-t1);
+  /*unsigned int t2 = micros();
+  Serial.printf("Execution time T5: %d\n", t2-t1);*/
 }
 
 void loop() {
