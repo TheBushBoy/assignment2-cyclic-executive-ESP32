@@ -1,8 +1,8 @@
 #include <B31DGMonitor.h>
+#include <Ticker.h>
 
 #define FRAME_DURATION_MS 4
 
-unsigned long frameTime = 0;
 unsigned long frameCounter = 0;
 
 // Pin definition
@@ -26,11 +26,14 @@ unsigned int avg = 0;
 unsigned int values[4];
 
 B31DGCyclicExecutiveMonitor monitor;
+Ticker periodicTicker;
 
 void setup() {
   Serial.begin(9600);
 
-  //monitor.startMonitoring();
+  monitor.startMonitoring();  
+  periodicTicker.attach_ms(FRAME_DURATION_MS, frame);
+  frame();
   
   pinMode(T1_Pin, OUTPUT);
   pinMode(T2_Pin, INPUT);
@@ -39,7 +42,7 @@ void setup() {
 }
 
 void frame() {
-  unsigned int slot = frameCounter % 10;
+  unsigned int slot = frameCounter % 50;
   switch (slot) {
     case 0:  task1();          task3(); task4();          break;
     case 1:  task1(); task2();                   task5(); break;
@@ -70,8 +73,8 @@ void frame() {
     case 26: task1();          task3();          task5(); break;
     case 27: task1();                                     break;
     case 28: task1();          task3();                   break;
-    case 29: task1();                   task4();          break;
-    case 30: task1();          task3();                   break;
+    case 29: task1();                                     break;
+    case 30: task1();          task3(); task4();          break;
     case 31: task1(); task2();                            break;
     case 32: task1();          task3();                   break;
     case 33: task1();                                     break;
@@ -91,9 +94,8 @@ void frame() {
     case 47: task1();                                     break;
     case 48: task1();          task3();                   break;
     case 49: task1();                                     break;
-    case 50: task1();          task3(); task4();          break;
   }
-    
+  frameCounter++;
 }
 
 void task1() {
@@ -200,6 +202,4 @@ void task5() {
   monitor.jobEnded(5);
 }
 
-void loop() {
-  frame();
-}
+void loop() {}
