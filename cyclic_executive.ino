@@ -1,7 +1,14 @@
+#include <B31DGMonitor.h>
+
+#define FRAME_DURATION_MS 4
+
+unsigned long frameTime = 0;
+unsigned long frameCounter = 0;
+
 // Pin definition
 const byte T1_Pin = 0;
-const byte T2_Pin = 1;
-const byte T3_Pin = 2;
+const byte T2_Pin = 19;
+const byte T3_Pin = 18;
 const byte T4_Pin = 3;
 
 // Maximum values
@@ -18,8 +25,12 @@ unsigned int avg = 0;
 // Store 4 values for the task 4
 unsigned int values[4];
 
+B31DGCyclicExecutiveMonitor monitor;
+
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
+
+  //monitor.startMonitoring();
   
   pinMode(T1_Pin, OUTPUT);
   pinMode(T2_Pin, INPUT);
@@ -27,7 +38,66 @@ void setup() {
   pinMode(T4_Pin, INPUT);
 }
 
+void frame() {
+  unsigned int slot = frameCounter % 10;
+  switch (slot) {
+    case 0:  task1();          task3(); task4();          break;
+    case 1:  task1(); task2();                   task5(); break;
+    case 2:  task1();          task3();                   break;
+    case 3:  task1();                                     break;
+    case 4:  task1();          task3();                   break;
+    case 5:  task1(); task2();          task4();          break;
+    case 6:  task1();          task3();                   break;
+    case 7:  task1();                                     break;
+    case 8:  task1();          task3();                   break;
+    case 9:  task1();                                     break;
+    case 10: task1();          task3(); task4();          break;
+    case 11: task1(); task2();                            break;
+    case 12: task1();          task3();                   break;
+    case 13: task1();                                     break;
+    case 14: task1();          task3();                   break;
+    case 15: task1(); task2();          task4();          break;
+    case 16: task1();          task3();                   break;
+    case 17: task1();                                     break;
+    case 18: task1();          task3();                   break;
+    case 19: task1();                                     break;
+    case 20: task1();          task3(); task4();          break;
+    case 21: task1(); task2();                            break;
+    case 22: task1();          task3();                   break;
+    case 23: task1();                                     break;
+    case 24: task1();          task3();                   break;
+    case 25: task1(); task2();          task4();          break;
+    case 26: task1();          task3();          task5(); break;
+    case 27: task1();                                     break;
+    case 28: task1();          task3();                   break;
+    case 29: task1();                   task4();          break;
+    case 30: task1();          task3();                   break;
+    case 31: task1(); task2();                            break;
+    case 32: task1();          task3();                   break;
+    case 33: task1();                                     break;
+    case 34: task1();          task3();                   break;
+    case 35: task1(); task2();          task4();          break;
+    case 36: task1();          task3();                   break;
+    case 37: task1();                                     break;
+    case 38: task1();          task3();                   break;
+    case 39: task1();                                     break;
+    case 40: task1();          task3(); task4();          break;
+    case 41: task1(); task2();                            break;
+    case 42: task1();          task3();                   break;
+    case 43: task1();                                     break;
+    case 44: task1();          task3();                   break;
+    case 45: task1(); task2();          task4();          break;
+    case 46: task1();          task3();                   break;
+    case 47: task1();                                     break;
+    case 48: task1();          task3();                   break;
+    case 49: task1();                                     break;
+    case 50: task1();          task3(); task4();          break;
+  }
+    
+}
+
 void task1() {
+  monitor.jobStarted(1);
   // Execution time
   /*unsigned int t1 = micros();*/
 
@@ -48,47 +118,39 @@ void task1() {
   // Execution time
   /*unsigned int t2 = micros();
   Serial.printf("Execution time T1: %d\n", t2-t1);*/
-}
-
-float freqCount(const byte pinNumber) {
-  // Measure time of a period
-  unsigned int t1, t2;
-
-  // Measuring the time the signal is high and low
-  do {
-    t1 = pulseIn(pinNumber, HIGH, 1e6);
-    t2 = pulseIn(pinNumber, LOW, 1e6);
-  }
-  // Keep only the consistent values
-  while(t1 == 0 || t2 == 0 || t1 <= 50 || t2 <= 50);
-  
-  return 1e6/(t2 + t1);
+  monitor.jobEnded(1);
 }
 
 void task2() {
+  monitor.jobStarted(2);
   // Execution time
   /*unsigned int t1 = micros();*/
 
-  freq1 = freqCount(T2_Pin);
+  unsigned int pulseTime = pulseIn(T2_Pin, HIGH, 2500);
+  freq1 = (pulseTime == 0) ? 0 : 1e6/(2*pulseTime);
 
   // Execution time
   /*unsigned int t2 = micros();
-  Serial.printf("Execution time T2: %d\n", t2-t1);*/
+  Serial.printf("Execution time T2: %d\nPulse In: %d\nFreq1: %f\n", t2-t1, pulseTime, freq1);*/
+  monitor.jobEnded(2);
 }
 
 void task3() {
+  monitor.jobStarted(3);
   // Execution time
   /*unsigned int t1 = micros();*/
 
-  freq2 = freqCount(T3_Pin);
+  unsigned int pulseTime = pulseIn(T3_Pin, HIGH, 2200);
+  freq2 = (pulseTime == 0) ? 0 : 1e6/(2*pulseTime);
 
   // Execution time
   /*unsigned int t2 = micros();
-  Serial.printf("Execution time T3: %d\n", t2-t1);*/
-
+  Serial.printf("Execution time T3: %d\nPulse In: %d\nFreq2: %f\n", t2-t1, pulseTime, freq2);*/
+  monitor.jobEnded(3);
 }
 
 void task4() {
+  monitor.jobStarted(4);
   // Execution time
   /*unsigned int t1 = micros();*/
   
@@ -105,18 +167,20 @@ void task4() {
   avg /= i+1;
 
   if(avg >= maxValue /2) {
-    digitalWrite(LED_BUILTIN, HIGH);
+    //digitalWrite(LED_BUILTIN, HIGH);
   }
   else {
-    digitalWrite(LED_BUILTIN, LOW);
+    //digitalWrite(LED_BUILTIN, LOW);
   }
   
   // Execution time
   /*unsigned int t2 = micros();
   Serial.printf("Execution time T4: %d\n", t2-t1);*/
+  monitor.jobEnded(4);
 }
 
 void task5() {
+  monitor.jobStarted(5);
   // Execution time
   /*unsigned int t1 = micros();*/
 
@@ -133,13 +197,9 @@ void task5() {
   // Execution time
   /*unsigned int t2 = micros();
   Serial.printf("Execution time T5: %d\n", t2-t1);*/
+  monitor.jobEnded(5);
 }
 
 void loop() {
-  task1();
-  task2();
-  task3();
-  task4();
-  task5();
-  Serial.print("\n");
+  frame();
 }
