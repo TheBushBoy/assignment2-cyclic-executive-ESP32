@@ -3,7 +3,6 @@
 
 #define FRAME_DURATION_MS 4
 
-unsigned long frameCounter = 0;
 
 // Pin definition
 const byte T1_Pin = 0;
@@ -25,14 +24,20 @@ unsigned int avg = 0;
 // Store 4 values for the task 4
 unsigned int values[4];
 
+// Count the frames
+unsigned long frameCounter = 0;
+
 B31DGCyclicExecutiveMonitor monitor;
 Ticker periodicTicker;
 
 void setup() {
   Serial.begin(9600);
 
-  monitor.startMonitoring();  
+  // Waiting 4ms and executing the next frame
+  monitor.startMonitoring();
   periodicTicker.attach_ms(FRAME_DURATION_MS, frame);
+  
+  // Executing the frame 0 without waiting for 4ms
   frame();
   
   pinMode(T1_Pin, OUTPUT);
@@ -128,6 +133,7 @@ void task2() {
   // Execution time
   /*unsigned int t1 = micros();*/
 
+  // Getting the duration of a pulse, multiplied by 2 to get the period
   unsigned int pulseTime = pulseIn(T2_Pin, HIGH, 2500);
   freq1 = (pulseTime == 0) ? 0 : 1e6/(2*pulseTime);
 
@@ -142,6 +148,7 @@ void task3() {
   // Execution time
   /*unsigned int t1 = micros();*/
 
+  // Getting the duration of a pulse, multiplied by 2 to get the period
   unsigned int pulseTime = pulseIn(T3_Pin, HIGH, 2200);
   freq2 = (pulseTime == 0) ? 0 : 1e6/(2*pulseTime);
 
@@ -158,21 +165,24 @@ void task4() {
   
   unsigned short i;
 
+  // Shifting the former values the storing the new one
   values[3] = values[2];
   values[2] = values[1];
   values[1] = values[0];
   values[0] = analogRead(T4_Pin);
 
+  // Calculating the average of the last 4 values
   for(i = 0; i < 4; i++) {
     avg += values[i];
   }
   avg /= i+1;
 
+  // Turn on the led if the average is greater than the half of the maximum value
   if(avg >= maxValue /2) {
-    //digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_BUILTIN, HIGH);
   }
   else {
-    //digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_BUILTIN, LOW);
   }
   
   // Execution time
@@ -186,6 +196,7 @@ void task5() {
   // Execution time
   /*unsigned int t1 = micros();*/
 
+  // Scaling the values beetween 0 and 99
   int freq1Scaled = (freq1 - freq1Min) / (freqMax - freq1Min) * 99;
   int freq2Scaled = (freq2 - freq2Min) / (freqMax - freq2Min) * 99;
 
